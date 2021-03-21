@@ -30,6 +30,10 @@ elif [[ $USE_BRANCH ]]; then
   git checkout $USE_BRANCH
   printf "\nYou are now using the latest commit in branch:\e[01;33m $(git branch | sed -n '/\* /s///p')\e[0m\n\n"
   cd ..
+elif [[ $USE_PATH ]]; then
+  cd Marlin/
+  printf "\nYou are using a release path: $(grep UNIFIED_VERSION Marlin/Configuration_backend.h)\n"
+  cd ..
 else
   cd Marlin/
   printf "\nYou are using git tag from docker image:\e[01;33m $(git tag --points-at HEAD)\e[0m\n\n"
@@ -67,7 +71,7 @@ else
 fi
 
 if [[ ${success} -eq 0 ]]; then
-  OUTPUT_DIR=/home/platformio/build/$BOARD
+  OUTPUT_DIR=/home/platformio/build
   mkdir -p $OUTPUT_DIR
 
   printf "\nCopying compiled firmware to output folder..\n"
@@ -76,11 +80,11 @@ if [[ ${success} -eq 0 ]]; then
   if [ $(find . -name "*.${FW_EXTENSION}") ];
   then
     FIRMWARE_NAME=$(find . -name "*.${FW_EXTENSION}" -type f -exec basename {} .${FW_EXTENSION} ';')
-    md5sum $FIRMWARE_NAME.$FW_EXTENSION > $OUTPUT_DIR/$FIRMWARE_NAME.md5
-    cp $FIRMWARE_NAME.$FW_EXTENSION $OUTPUT_DIR
+    md5sum $FIRMWARE_NAME.$FW_EXTENSION > $OUTPUT_DIR/$PRINTER.md5
+    cp $FIRMWARE_NAME.$FW_EXTENSION $OUTPUT_DIR/$PRINTER.$FW_EXTENSION
 
     printf "\nValidating firmware checksum.."
-    if md5sum -c $OUTPUT_DIR/$FIRMWARE_NAME.md5;
+    if md5sum -c $OUTPUT_DIR/$PRINTER.md5;
     then
       printf "\e[0mMD5 Checksum Validation: \e[1;32mSucceeded\n"
       echo ""
